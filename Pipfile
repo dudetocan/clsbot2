@@ -8,6 +8,7 @@ python-telegram-bot = "*"
 redis = "*"
 mwt = "*"
 boto = "*"
+forex-python = "*"
 
 [dev-packages]
 

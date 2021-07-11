@@ -21,7 +21,8 @@ PORT = int(os.environ.get('PORT', 8443))
 
 token = os.environ.get('TOKEN')
 
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+import telegram
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, InlineQueryHandler
 
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -32,6 +33,11 @@ import redis
 r = redis.from_url(os.environ.get('REDIS_URL'))
 
 from mwt import MWT
+from forex_python.converter import CurrencyRates
+
+from telegram import ParseMode
+
+import requests
 
 @MWT(timeout=60*60)
 def get_admin_ids(bot, chat_id):
@@ -56,6 +62,7 @@ def start(update, context):
 def help(update, context):
     """Send a message when the command /help is issued."""
     update.message.reply_text('Help!')
+
 
 """
 Adjust a user's points
@@ -111,6 +118,7 @@ def showPoints(update, context):
 
     update.message.reply_text(f"\"{' '.join(user_name_str)}\" 嘅CLS分數係：{points}")
 
+
 """
 Reset a user's points to 0
 """
@@ -125,7 +133,8 @@ def resetPoints(update, context):
     user_name = "cls:" + str(" ".join(user_name_str))
     r.set(user_name, 0)
     update.message.reply_text(f"\"{' '.join(user_name_str)}\" 嘅分數已經歸零喇！多謝院長😊🙏！")
-    
+
+ 
 """
 Points by rank
 """
@@ -134,32 +143,42 @@ def rank(update, context):
     for key in r.scan_iter("cls:*"):
         ranks[key] = r.get(key).decode('utf-8')
 
-    ranks = dict(sorted(ranks.items(), key=lambda item: -int(item[1])))
+    # title
+    title = []
+    title.append("***CLS分數龍虎榜***\n\n")
 
+    # positive
+    ranks = dict(sorted(ranks.items(), key=lambda item: -int(item[1])))
     positive = []
-    positive.append("CLS分數龍虎榜 TOP 5：\n")
+    positive.append("TOP 10：\n")
     for idx, (user_name, points) in enumerate(ranks.items()):
-        if idx > 4 or int(points) <= 0:
+        if idx >= 10 or int(points) <= 0:
             break
-        user_name = user_name[4:]
-        positive.append(f"{idx+1}: {user_name.decode('utf-8')} | {points}\n")
+        user_name = user_name[4:].decode('utf-8')
+        while user_name[0] == '@':
+            user_name = user_name[1:]
+        positive.append(f"{idx+1}: {user_name} | {points}\n")
     if len(positive) == 1:
         positive.append("冇人上榜~\n")
     
+    # negative
     ranks = dict(sorted(ranks.items(), key=lambda item: int(item[1])))
     negative = []
-    negative.append("\n\nCLS分數龍虎榜 負TOP 5：\n")
+    negative.append("\n負TOP 10：\n")
     for idx, (user_name, points) in enumerate(ranks.items()):
-        if idx > 4 or int(points) >= 0:
+        if idx >= 10 or int(points) >= 0:
             break
-        user_name = user_name[4:]
-        negative.append(f"{idx+1}: {user_name.decode('utf-8')} | {points}\n")
+        user_name = user_name[4:].decode('utf-8')
+        while user_name[0] == '@':
+            user_name = user_name[1:]
+        negative.append(f"{idx+1}: {user_name} | {points}\n")
     if len(negative) == 1:
         negative.append("冇人上榜~\n")
 
-    result = positive + negative
+    result = title + positive + negative
 
     update.message.reply_text("".join(result))
+
 
 """
 Delete key from redis
@@ -181,6 +200,7 @@ def delete(update, context):
     r.delete(user_name)
     update.message.reply_text(f"剷咗\"{' '.join(user_name_str)}\"")
 
+
 """
 Check existing users in redis
 """
@@ -194,6 +214,38 @@ def users(update, context):
         result.append(f"{key.decode('utf-8')}\n")
 
     update.message.reply_text("".join(result))
+
+
+"""Currency from CAD to HKD"""
+@MWT(timeout=1800)
+def _currency():
+    c = CurrencyRates()
+    rate = c.get_rate('CAD', 'HKD')
+    formatted_rate = "{:.5f}".format(rate)
+    return formatted_rate
+    
+def currency(update, context):
+    rate = _currency()
+    update.message.reply_text(f"而家加幣兑港幣嘅匯率係：{rate} （暫時用緊free plan，每日update一次）")
+    
+
+"""mewe link"""
+def mewe(update, context):
+    context.bot.send_message(chat_id=update.message.chat_id, text="<a href='https://mewe.com/group/5ff9a6101bcba57ee4e70263'>院長MEWE</a>",parse_mode=ParseMode.HTML)
+    
+
+"""Instagram"""
+def ig(update, context):
+    context.bot.send_message(chat_id=update.message.chat_id, text="<a href='https://www.instagram.com/letsbeginwithabc/'>院長IG</a>",parse_mode=ParseMode.HTML)
+
+
+"""wake bot"""
+def callback_minute(context: telegram.ext.CallbackContext):
+    code = requests.get("https://clsbotcls.herokuapp.com/")
+    status_code = code.status_code
+    context.bot.send_message(chat_id='-595176127', 
+                             text=status_code)
+
 
 def echo(update, context):
     """Echo the user message."""
@@ -224,6 +276,13 @@ def main():
     dp.add_handler(CommandHandler('rank', rank))
     dp.add_handler(CommandHandler('delete', delete))
     dp.add_handler(CommandHandler('users', users))
+    dp.add_handler(CommandHandler('currency', currency))
+    dp.add_handler(CommandHandler('mewe', mewe))
+    dp.add_handler(CommandHandler('ig', ig))
+    
+    # schedule job
+    job = updater.job_queue
+    job_minute = job.run_repeating(callback_minute, interval=60*15, first=10)
 
     # on noncommand i.e message - echo the message on Telegram
     # dp.add_handler(MessageHandler(Filters.text, echo))
@@ -241,7 +300,6 @@ def main():
     # SIGTERM or SIGABRT. This should be used most of the time, since
     # start_polling() is non-blocking and will stop the bot gracefully.
     updater.idle()
-
 
 
 if __name__ == '__main__':
