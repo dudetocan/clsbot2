@@ -32,6 +32,7 @@ import redis
 r = redis.from_url(os.environ.get('REDIS_URL'))
 
 from mwt import MWT
+from forex_python.converter import CurrencyRates
 
 @MWT(timeout=60*60)
 def get_admin_ids(bot, chat_id):
@@ -195,6 +196,12 @@ def users(update, context):
 
     update.message.reply_text("".join(result))
 
+"""Currency from CAD to HKD"""
+def currency(update, context):
+    c = CurrencyRates()
+    rate = c.get_rate('CAD', 'HKD')
+    update.message.reply_text("而家加幣兑港幣嘅匯率係：" + rate)
+
 def echo(update, context):
     """Echo the user message."""
     update.message.reply_text(update.message.text)
@@ -224,6 +231,7 @@ def main():
     dp.add_handler(CommandHandler('rank', rank))
     dp.add_handler(CommandHandler('delete', delete))
     dp.add_handler(CommandHandler('users', users))
+    dp.add_handler(CommandHandler('currency', currency))
 
     # on noncommand i.e message - echo the message on Telegram
     # dp.add_handler(MessageHandler(Filters.text, echo))
