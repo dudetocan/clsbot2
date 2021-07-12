@@ -197,11 +197,16 @@ def users(update, context):
     update.message.reply_text("".join(result))
 
 """Currency from CAD to HKD"""
-def currency(update, context):
+@MWT(timeout=300)
+def _currency():
     c = CurrencyRates()
     rate = c.get_rate('CAD', 'HKD')
     formatted_rate = "{:.5f}".format(rate)
-    update.message.reply_text(f"而家加幣兑港幣嘅匯率係：{formatted_rate}")
+    return formatted_rate
+    
+def currency(update, context):
+    rate = _currency()
+    update.message.reply_text(f"而家加幣兑港幣嘅匯率係：{rate}")
 
 def echo(update, context):
     """Echo the user message."""
