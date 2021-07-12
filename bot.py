@@ -200,7 +200,8 @@ def users(update, context):
 def currency(update, context):
     c = CurrencyRates()
     rate = c.get_rate('CAD', 'HKD')
-    update.message.reply_text(f"而家加幣兑港幣嘅匯率係：{rate}")
+    formatted_rate = "{:.5f}".format(rate)
+    update.message.reply_text(f"而家加幣兑港幣嘅匯率係：{formatted_rate}")
 
 def echo(update, context):
     """Echo the user message."""
