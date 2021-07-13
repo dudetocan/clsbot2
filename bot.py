@@ -143,6 +143,8 @@ def rank(update, context):
         if idx > 4 or int(points) <= 0:
             break
         user_name = user_name[4:]
+        while (user_name[0] == '@'):
+            user_name = user_name[1:]
         positive.append(f"{idx+1}: {user_name.decode('utf-8')} | {points}\n")
     if len(positive) == 1:
         positive.append("冇人上榜~\n")
@@ -154,6 +156,8 @@ def rank(update, context):
         if idx > 4 or int(points) >= 0:
             break
         user_name = user_name[4:]
+        while (user_name[0] == '@'):
+            user_name = user_name[1:]
         negative.append(f"{idx+1}: {user_name.decode('utf-8')} | {points}\n")
     if len(negative) == 1:
         negative.append("冇人上榜~\n")
