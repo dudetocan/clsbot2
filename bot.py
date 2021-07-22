@@ -212,6 +212,10 @@ def currency(update, context):
     rate = _currency()
     update.message.reply_text(f"而家加幣兑港幣嘅匯率係：{rate} （暫時用緊free plan，每日update一次）")
 
+"""Instagram"""
+def ig(update, context):
+    context.bot.send_message(chat_id=update.message.chat_id, text="<a href='https://www.instagram.com/letsbeginwithabc/'>院長IG</a>",parse_mode=ParseMode.HTML)
+
 def echo(update, context):
     """Echo the user message."""
     update.message.reply_text(update.message.text)
@@ -242,6 +246,7 @@ def main():
     dp.add_handler(CommandHandler('delete', delete))
     dp.add_handler(CommandHandler('users', users))
     dp.add_handler(CommandHandler('currency', currency))
+    dp.add_handler(CommandHandler('ig', ig))
 
     # on noncommand i.e message - echo the message on Telegram
     # dp.add_handler(MessageHandler(Filters.text, echo))
