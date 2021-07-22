@@ -34,6 +34,8 @@ r = redis.from_url(os.environ.get('REDIS_URL'))
 from mwt import MWT
 from forex_python.converter import CurrencyRates
 
+from telegram import ParseMode
+
 @MWT(timeout=60*60)
 def get_admin_ids(bot, chat_id):
     """Returns a list of admin IDs for a given chat. Results are cached for 1 hour."""
@@ -212,6 +214,10 @@ def currency(update, context):
     rate = _currency()
     update.message.reply_text(f"而家加幣兑港幣嘅匯率係：{rate} （暫時用緊free plan，每日update一次）")
 
+"""mewe link"""
+def mewe(update, context):
+    context.bot.send_message(chat_id=update.message.chat_id, text="<a href='https://mewe.com/group/5ff9a6101bcba57ee4e70263'>院長MEWE</a>",parse_mode=ParseMode.HTML)
+
 def echo(update, context):
     """Echo the user message."""
     update.message.reply_text(update.message.text)
@@ -242,6 +248,7 @@ def main():
     dp.add_handler(CommandHandler('delete', delete))
     dp.add_handler(CommandHandler('users', users))
     dp.add_handler(CommandHandler('currency', currency))
+    dp.add_handler(CommandHandler('mewe', mewe))
 
     # on noncommand i.e message - echo the message on Telegram
     # dp.add_handler(MessageHandler(Filters.text, echo))
