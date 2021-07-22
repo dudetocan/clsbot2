@@ -135,12 +135,16 @@ def rank(update, context):
     for key in r.scan_iter("cls:*"):
         ranks[key] = r.get(key).decode('utf-8')
 
-    ranks = dict(sorted(ranks.items(), key=lambda item: -int(item[1])))
+    # title
+    title = []
+    title.append("***CLS分數龍虎榜***\n\n")
 
+    # positive
+    ranks = dict(sorted(ranks.items(), key=lambda item: -int(item[1])))
     positive = []
-    positive.append("CLS分數龍虎榜 TOP 5：\n")
+    positive.append("TOP 10：\n")
     for idx, (user_name, points) in enumerate(ranks.items()):
-        if idx > 4 or int(points) <= 0:
+        if idx >= 10 or int(points) <= 0:
             break
         user_name = user_name[4:].decode('utf-8')
         while user_name[0] == '@':
@@ -149,11 +153,12 @@ def rank(update, context):
     if len(positive) == 1:
         positive.append("冇人上榜~\n")
     
+    # negative
     ranks = dict(sorted(ranks.items(), key=lambda item: int(item[1])))
     negative = []
-    negative.append("\n\nCLS分數龍虎榜 負TOP 5：\n")
+    negative.append("\n負TOP 10：\n")
     for idx, (user_name, points) in enumerate(ranks.items()):
-        if idx > 4 or int(points) >= 0:
+        if idx >= 10 or int(points) >= 0:
             break
         user_name = user_name[4:].decode('utf-8')
         while user_name[0] == '@':
@@ -162,7 +167,7 @@ def rank(update, context):
     if len(negative) == 1:
         negative.append("冇人上榜~\n")
 
-    result = positive + negative
+    result = title + positive + negative
 
     update.message.reply_text("".join(result))
 
