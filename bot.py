@@ -34,6 +34,8 @@ r = redis.from_url(os.environ.get('REDIS_URL'))
 from mwt import MWT
 from forex_python.converter import CurrencyRates
 
+from telegram import ParseMode
+
 @MWT(timeout=60*60)
 def get_admin_ids(bot, chat_id):
     """Returns a list of admin IDs for a given chat. Results are cached for 1 hour."""
@@ -135,12 +137,16 @@ def rank(update, context):
     for key in r.scan_iter("cls:*"):
         ranks[key] = r.get(key).decode('utf-8')
 
-    ranks = dict(sorted(ranks.items(), key=lambda item: -int(item[1])))
+    # title
+    title = []
+    title.append("***CLS分數龍虎榜***\n\n")
 
+    # positive
+    ranks = dict(sorted(ranks.items(), key=lambda item: -int(item[1])))
     positive = []
-    positive.append("CLS分數龍虎榜 TOP 5：\n")
+    positive.append("TOP 10：\n")
     for idx, (user_name, points) in enumerate(ranks.items()):
-        if idx > 4 or int(points) <= 0:
+        if idx >= 10 or int(points) <= 0:
             break
         user_name = user_name[4:].decode('utf-8')
         while user_name[0] == '@':
@@ -149,11 +155,12 @@ def rank(update, context):
     if len(positive) == 1:
         positive.append("冇人上榜~\n")
     
+    # negative
     ranks = dict(sorted(ranks.items(), key=lambda item: int(item[1])))
     negative = []
-    negative.append("\n\nCLS分數龍虎榜 負TOP 5：\n")
+    negative.append("\n負TOP 10：\n")
     for idx, (user_name, points) in enumerate(ranks.items()):
-        if idx > 4 or int(points) >= 0:
+        if idx >= 10 or int(points) >= 0:
             break
         user_name = user_name[4:].decode('utf-8')
         while user_name[0] == '@':
@@ -162,7 +169,7 @@ def rank(update, context):
     if len(negative) == 1:
         negative.append("冇人上榜~\n")
 
-    result = positive + negative
+    result = title + positive + negative
 
     update.message.reply_text("".join(result))
 
@@ -212,6 +219,14 @@ def currency(update, context):
     rate = _currency()
     update.message.reply_text(f"而家加幣兑港幣嘅匯率係：{rate} （暫時用緊free plan，每日update一次）")
 
+"""mewe link"""
+def mewe(update, context):
+    context.bot.send_message(chat_id=update.message.chat_id, text="<a href='https://mewe.com/group/5ff9a6101bcba57ee4e70263'>院長MEWE</a>",parse_mode=ParseMode.HTML)
+    
+"""Instagram"""
+def ig(update, context):
+    context.bot.send_message(chat_id=update.message.chat_id, text="<a href='https://www.instagram.com/letsbeginwithabc/'>院長IG</a>",parse_mode=ParseMode.HTML)
+
 def echo(update, context):
     """Echo the user message."""
     update.message.reply_text(update.message.text)
@@ -242,6 +257,8 @@ def main():
     dp.add_handler(CommandHandler('delete', delete))
     dp.add_handler(CommandHandler('users', users))
     dp.add_handler(CommandHandler('currency', currency))
+    dp.add_handler(CommandHandler('mewe', mewe))
+    dp.add_handler(CommandHandler('ig', ig))
 
     # on noncommand i.e message - echo the message on Telegram
     # dp.add_handler(MessageHandler(Filters.text, echo))
