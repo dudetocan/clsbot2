@@ -222,6 +222,10 @@ def currency(update, context):
 """mewe link"""
 def mewe(update, context):
     context.bot.send_message(chat_id=update.message.chat_id, text="<a href='https://mewe.com/group/5ff9a6101bcba57ee4e70263'>院長MEWE</a>",parse_mode=ParseMode.HTML)
+    
+"""Instagram"""
+def ig(update, context):
+    context.bot.send_message(chat_id=update.message.chat_id, text="<a href='https://www.instagram.com/letsbeginwithabc/'>院長IG</a>",parse_mode=ParseMode.HTML)
 
 def echo(update, context):
     """Echo the user message."""
@@ -254,6 +258,7 @@ def main():
     dp.add_handler(CommandHandler('users', users))
     dp.add_handler(CommandHandler('currency', currency))
     dp.add_handler(CommandHandler('mewe', mewe))
+    dp.add_handler(CommandHandler('ig', ig))
 
     # on noncommand i.e message - echo the message on Telegram
     # dp.add_handler(MessageHandler(Filters.text, echo))
