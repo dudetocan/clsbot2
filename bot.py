@@ -21,7 +21,8 @@ PORT = int(os.environ.get('PORT', 8443))
 
 token = os.environ.get('TOKEN')
 
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+import telegram
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, InlineQueryHandler
 
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -35,6 +36,8 @@ from mwt import MWT
 from forex_python.converter import CurrencyRates
 
 from telegram import ParseMode
+
+import requests
 
 @MWT(timeout=60*60)
 def get_admin_ids(bot, chat_id):
@@ -59,6 +62,7 @@ def start(update, context):
 def help(update, context):
     """Send a message when the command /help is issued."""
     update.message.reply_text('Help!')
+
 
 """
 Adjust a user's points
@@ -114,6 +118,7 @@ def showPoints(update, context):
 
     update.message.reply_text(f"\"{' '.join(user_name_str)}\" 嘅CLS分數係：{points}")
 
+
 """
 Reset a user's points to 0
 """
@@ -128,7 +133,8 @@ def resetPoints(update, context):
     user_name = "cls:" + str(" ".join(user_name_str))
     r.set(user_name, 0)
     update.message.reply_text(f"\"{' '.join(user_name_str)}\" 嘅分數已經歸零喇！多謝院長😊🙏！")
-    
+
+ 
 """
 Points by rank
 """
@@ -173,6 +179,7 @@ def rank(update, context):
 
     update.message.reply_text("".join(result))
 
+
 """
 Delete key from redis
 """
@@ -193,6 +200,7 @@ def delete(update, context):
     r.delete(user_name)
     update.message.reply_text(f"剷咗\"{' '.join(user_name_str)}\"")
 
+
 """
 Check existing users in redis
 """
@@ -207,6 +215,7 @@ def users(update, context):
 
     update.message.reply_text("".join(result))
 
+
 """Currency from CAD to HKD"""
 @MWT(timeout=1800)
 def _currency():
@@ -219,13 +228,24 @@ def currency(update, context):
     rate = _currency()
     update.message.reply_text(f"而家加幣兑港幣嘅匯率係：{rate} （暫時用緊free plan，每日update一次）")
 
+
 """mewe link"""
 def mewe(update, context):
     context.bot.send_message(chat_id=update.message.chat_id, text="<a href='https://mewe.com/group/5ff9a6101bcba57ee4e70263'>院長MEWE</a>",parse_mode=ParseMode.HTML)
     
+
 """Instagram"""
 def ig(update, context):
     context.bot.send_message(chat_id=update.message.chat_id, text="<a href='https://www.instagram.com/letsbeginwithabc/'>院長IG</a>",parse_mode=ParseMode.HTML)
+
+
+"""wake bot"""
+def callback_minute(context: telegram.ext.CallbackContext):
+    code = requests.get("https://clsbotcls.herokuapp.com/")
+    status_code = code.status_code
+    context.bot.send_message(chat_id='-595176127', 
+                             text=status_code)
+
 
 def echo(update, context):
     """Echo the user message."""
@@ -259,6 +279,10 @@ def main():
     dp.add_handler(CommandHandler('currency', currency))
     dp.add_handler(CommandHandler('mewe', mewe))
     dp.add_handler(CommandHandler('ig', ig))
+    
+    # schedule job
+    job = updater.job_queue
+    job_minute = job.run_repeating(callback_minute, interval=60*15, first=10)
 
     # on noncommand i.e message - echo the message on Telegram
     # dp.add_handler(MessageHandler(Filters.text, echo))
