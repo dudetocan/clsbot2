@@ -282,7 +282,7 @@ def main():
     
     # schedule job
     job = updater.job_queue
-    job_minute = job.run_repeating(callback_minute, interval=60*15, first=10)
+    job_minute = job.run_repeating(callback_minute, interval=60*30, first=10)
 
     # on noncommand i.e message - echo the message on Telegram
     # dp.add_handler(MessageHandler(Filters.text, echo))
