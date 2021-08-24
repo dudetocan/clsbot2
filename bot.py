@@ -179,6 +179,35 @@ def rank(update, context):
 
     update.message.reply_text("".join(result))
 
+"""
+Points by rank (viewall)
+"""
+def rankall(update, context):
+    ranks = {}
+    for key in r.scan_iter("cls:*"):
+        ranks[key] = r.get(key).decode('utf-8')
+
+    # title
+    title = []
+    title.append("***CLS分數龍虎榜***\n\n")
+
+    # all points
+    ranks = dict(sorted(ranks.items(), key=lambda item: -int(item[1])))
+    rank = []
+    for idx, (user_name, points) in enumerate(ranks.items()):
+        if int(points) == 0:
+            continue
+        user_name = user_name[4:].decode('utf-8')
+        while user_name[0] == '@':
+            user_name = user_name[1:]
+        rank.append(f"{len(rank)+1}: {user_name} | {points}\n")
+    if len(rank) == 0:
+        rank.append("冇人上榜~\n")
+
+    result = title + rank
+
+    update.message.reply_text("".join(result))
+
 
 """
 Delete key from redis
@@ -274,6 +303,7 @@ def main():
     dp.add_handler(CommandHandler('show', showPoints))
     dp.add_handler(CommandHandler('reset', resetPoints))
     dp.add_handler(CommandHandler('rank', rank))
+    dp.add_handler(CommandHandler('rankall', rankall))
     dp.add_handler(CommandHandler('delete', delete))
     dp.add_handler(CommandHandler('users', users))
     dp.add_handler(CommandHandler('currency', currency))
