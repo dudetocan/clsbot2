@@ -58,10 +58,16 @@ def checkPermission(update, context):
 def start(update, context):
     """Send a message when the command /start is issued."""
     update.message.reply_text('Hi!')
-    
+
+
+"""
+Show helpful links
+"""
 def help(update, context):
-    """Send a message when the command /help is issued."""
-    update.message.reply_text('Help!')
+    context.bot.send_message(chat_id=update.message.chat_id, text=
+    "\
+    <a href='https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/hong-kong-residents-permanent-residence/eligibility.html'>Stream A/B 傳送門</a>\n<a href='https://applications.wes.org/createaccount/home/select-eval-type?ln=1'>學歷認證</a> （ECA Application for IRCC）\n<a href='https://www.cic.gc.ca/english/contacts/web-form.asp'>Webform</a>\n<a href='https://docs.google.com/spreadsheets/d/1O1AaJHe0Xem0q_x1Q-65BIqw-pPQ157W0ujtVNf11h0/edit?usp=sharing'>Canada Income Tax Calculator (custom)</a>\n<a href='https://docs.google.com/spreadsheets/d/1aXMUpCB_I_VVQxsJUtEZqLULdGpG6EpbYCjaj23dSFg/edit?usp=sharing'>Stream B Hours Calculator</a> (File -> Make a copy)\n",
+    parse_mode=ParseMode.HTML)
 
 
 """
