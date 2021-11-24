@@ -59,9 +59,17 @@ def start(update, context):
     """Send a message when the command /start is issued."""
     update.message.reply_text('Hi!')
     
+
+"""
+Show helpful links
+"""
 def help(update, context):
     """Send a message when the command /help is issued."""
     update.message.reply_text('Help!')
+    context.bot.send_message(chat_id=update.message.chat_id, text=
+    "\
+    <a href='https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/hong-kong-residents-permanent-residence/eligibility.html'>Stream A/B 傳送門</a>\n<a href='https://applications.wes.org/createaccount/home/select-eval-type?ln=1'>學歷認證</a> （ECA Application for IRCC）\n<a href='https://www.cic.gc.ca/english/contacts/web-form.asp'>Webform</a>\n<a href='https://docs.google.com/spreadsheets/d/1O1AaJHe0Xem0q_x1Q-65BIqw-pPQ157W0ujtVNf11h0/edit?usp=sharing'>Canada Income Tax Calculator (custom)</a>\n<a href='https://docs.google.com/spreadsheets/d/1aXMUpCB_I_VVQxsJUtEZqLULdGpG6EpbYCjaj23dSFg/edit?usp=sharing'>Stream B Hours Calculator</a> (File -> Make a copy)\n<a href='https://linktr.ee/hkcaowpinfo'>加拿大救生艇資訊整合</a>\n",
+    parse_mode=ParseMode.HTML)
 
 
 """
@@ -79,7 +87,7 @@ def adjustPoints(update, context):
             points = int(context.args[-1])
             break
         except ValueError:
-            update.message.reply_text(f"唔改輸入一個有效嘅數字\n指令參考：/change username 100")
+            update.message.reply_text(f"唔該輸入一個有效嘅數字\n指令參考：/adjust @username 100")
             return
 
     if r.exists(user_name):
@@ -94,9 +102,9 @@ def adjustPoints(update, context):
     user_name_str = " ".join(user_name_str)
 
     if points < 0:
-        update.message.reply_text(f"扣咗 {user_name_str} {-points}分！\n佢而家嘅CLS分數係 {r.get(user_name).decode('utf-8')}分！")
+        update.message.reply_text(f"嗱！依家院長大發慈悲，扣住你 {user_name_str} {-points}分先，下次唔好喇～\n {user_name_str} 而家嘅CLS分數係 {r.get(user_name).decode('utf-8')}分！")
     else:
-        update.message.reply_text(f"加咗 {user_name_str} {points}分！\n佢而家嘅CLS分數係 {r.get(user_name).decode('utf-8')}分！")
+        update.message.reply_text(f"多謝院長嘅大恩大德🙇‍♂️🙇‍♀️！繼續努力💪！加你 {user_name_str} {points}分！\n {user_name_str} 而家嘅CLS分數係 {r.get(user_name).decode('utf-8')}分！")
 
 
 """
@@ -104,7 +112,7 @@ Get a user's points
 """
 def showPoints(update, context):
     if not context.args:
-        update.message.reply_text("唔該輸入正確嘅指令：/show username")
+        update.message.reply_text("唔該輸入正確嘅指令：/show @username")
         return
     user_name_str = [str(i) for i in context.args]
     user_name = "cls:" + str(" ".join(user_name_str))
@@ -113,7 +121,7 @@ def showPoints(update, context):
     if r.exists(user_name):
         points = r.get(user_name).decode('utf-8')
     else:
-        update.message.reply_text("冇呢個人喎...一係你打錯名，一係呢個人未有分")
+        update.message.reply_text("冇呢個人喎...一係你打錯名，一係呢個人未有分🤔")
         return
 
     update.message.reply_text(f"\"{' '.join(user_name_str)}\" 嘅CLS分數係：{points}")
@@ -126,7 +134,7 @@ def resetPoints(update, context):
     if not checkPermission(update, context):
         return
     if not context.args:
-        update.message.reply_text("唔該輸入正確嘅指令：/reset username")
+        update.message.reply_text("唔該輸入正確嘅指令：/reset @username")
         return
     
     user_name_str = [str(i) for i in context.args]
@@ -216,7 +224,7 @@ def delete(update, context):
     if not checkPermission(update, context):
         return
     if not context.args:
-        update.message.reply_text("唔該輸入正確嘅指令：/delete username")
+        update.message.reply_text("唔該輸入正確嘅指令：/delete @username")
         return
 
     user_name_str = [str(i) for i in context.args]
