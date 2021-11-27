@@ -78,6 +78,14 @@ Adjust a user's points
 def adjustPoints(update, context):
     if not checkPermission(update, context):
         return
+
+    # get list of admins
+    admin_list = context.bot.get_chat_administrators(update.message.chat_id)
+    admin_title = "院長" # default title
+    for admin in admin_list:
+        if update.effective_user.id == admin.user.id:
+            if admin.custom_title is not None:
+                admin_title = admin.custom_title
     
     user_name_str = [str(i) for i in context.args[:-1]]
     user_name = "cls:" + str(" ".join(user_name_str))
@@ -102,9 +110,9 @@ def adjustPoints(update, context):
     user_name_str = " ".join(user_name_str)
 
     if points < 0:
-        update.message.reply_text(f"嗱！依家院長大發慈悲，扣住你 {user_name_str} {-points}分先，下次唔好喇～\n {user_name_str} 而家嘅CLS分數係 {r.get(user_name).decode('utf-8')}分！")
+        update.message.reply_text(f"嗱！依家{admin_title}大發慈悲，扣住你 {user_name_str} {-points}分先，下次唔好喇～\n {user_name_str} 而家嘅CLS分數係 {r.get(user_name).decode('utf-8')}分！")
     else:
-        update.message.reply_text(f"多謝院長嘅大恩大德🙇‍♂️🙇‍♀️！繼續努力💪！加你 {user_name_str} {points}分！\n {user_name_str} 而家嘅CLS分數係 {r.get(user_name).decode('utf-8')}分！")
+        update.message.reply_text(f"多謝{admin_title}嘅大恩大德🙇‍♂️🙇‍♀️！繼續努力🤗！加你 {user_name_str} {points}分！\n {user_name_str} 而家嘅CLS分數係 {r.get(user_name).decode('utf-8')}分！")
 
 
 """
