@@ -1,0 +1,13 @@
+repos:
+- repo: local
+  hooks:
+  - id: black
+    name: black
+    entry: black --line-length=120
+    language: python
+    types: [python]
+  - id: isort
+    name: isort
+    entry: isort --profile black
+    language: system
+    types: [python]
