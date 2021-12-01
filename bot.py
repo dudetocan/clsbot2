@@ -264,7 +264,7 @@ def users(update, context):
 
 
 """Currency from CAD to HKD"""
-@MWT(timeout=1800)
+@MWT(timeout=10)
 def _currency():
     URL = "https://www.x-rates.com/table/?from=HKD&amount=1"
     page = requests.get(URL)
