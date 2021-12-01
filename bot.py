@@ -38,6 +38,8 @@ from forex_python.converter import CurrencyRates
 from telegram import ParseMode
 
 import requests
+from bs4 import BeautifulSoup
+import re
 
 @MWT(timeout=60*60)
 def get_admin_ids(bot, chat_id):
@@ -262,16 +264,20 @@ def users(update, context):
 
 
 """Currency from CAD to HKD"""
-@MWT(timeout=1800)
+@MWT(timeout=10)
 def _currency():
-    c = CurrencyRates()
-    rate = c.get_rate('CAD', 'HKD')
-    formatted_rate = "{:.5f}".format(rate)
-    return formatted_rate
+    URL = "https://www.x-rates.com/table/?from=HKD&amount=1"
+    page = requests.get(URL)
+
+    soup = BeautifulSoup(page.content, "html.parser")
+
+    for a in soup.find_all("a", href=True):
+        if "https://www.x-rates.com/graph/?from=CAD" in a["href"]:
+            return a.get_text()
     
 def currency(update, context):
     rate = _currency()
-    update.message.reply_text(f"而家加幣兑港幣嘅匯率係：{rate} （暫時用緊free plan，每日update一次）")
+    update.message.reply_text(f"而家加幣兑港幣嘅匯率係：{rate}\n資訊由www.x-rates.com提供")
     
 
 """mewe link"""
