@@ -10,6 +10,9 @@ mwt = "*"
 boto = "*"
 forex-python = "*"
 beautifulsoup4 = "*"
+pre-commit = "*"
+black = "*"
+isort = "*"
 
 [dev-packages]
 
