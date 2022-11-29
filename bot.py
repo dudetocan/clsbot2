@@ -44,8 +44,8 @@ logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 logger = logging.getLogger(__name__)
 
-
-r = redis.from_url(os.environ.get("REDIS_URL"))
+# starting from Nov 28, 2022, free heroku for Redis plan will no longer be available
+# r = redis.from_url(os.environ.get("REDIS_URL"))
 
 
 @MWT(timeout=60 * 60)
@@ -93,49 +93,48 @@ def help(update, context):
 Adjust a user's points
 """
 
+# def adjustPoints(update, context):
+#     if not checkPermission(update, context):
+#         return
 
-def adjustPoints(update, context):
-    if not checkPermission(update, context):
-        return
+#     # get list of admins
+#     admin_list = context.bot.get_chat_administrators(update.message.chat_id)
+#     admin_title = "院長"  # default title
+#     for admin in admin_list:
+#         if update.effective_user.id == admin.user.id:
+#             if admin.custom_title is not None:
+#                 admin_title = admin.custom_title
 
-    # get list of admins
-    admin_list = context.bot.get_chat_administrators(update.message.chat_id)
-    admin_title = "院長"  # default title
-    for admin in admin_list:
-        if update.effective_user.id == admin.user.id:
-            if admin.custom_title is not None:
-                admin_title = admin.custom_title
+#     user_name_str = [str(i) for i in context.args[:-1]]
+#     user_name = "cls:" + str(" ".join(user_name_str))
 
-    user_name_str = [str(i) for i in context.args[:-1]]
-    user_name = "cls:" + str(" ".join(user_name_str))
+#     while True:
+#         try:
+#             points = int(context.args[-1])
+#             break
+#         except ValueError:
+#             update.message.reply_text(f"唔該輸入一個有效嘅數字\n指令參考：/adjust @username 100")
+#             return
 
-    while True:
-        try:
-            points = int(context.args[-1])
-            break
-        except ValueError:
-            update.message.reply_text(f"唔該輸入一個有效嘅數字\n指令參考：/adjust @username 100")
-            return
+#     if r.exists(user_name):
+#         # update the current points
+#         cur_points = int(r.get(user_name).decode("utf-8"))
+#         new_points = cur_points + points
+#         r.set(user_name, new_points)
 
-    if r.exists(user_name):
-        # update the current points
-        cur_points = int(r.get(user_name).decode("utf-8"))
-        new_points = cur_points + points
-        r.set(user_name, new_points)
+#     else:
+#         r.set(user_name, points)
 
-    else:
-        r.set(user_name, points)
+#     user_name_str = " ".join(user_name_str)
 
-    user_name_str = " ".join(user_name_str)
-
-    if points < 0:
-        update.message.reply_text(
-            f"嗱！依家{admin_title}大發慈悲，扣住你 {user_name_str} {-points}分先，下次唔好喇～\n {user_name_str} 而家嘅CLS分數係 {r.get(user_name).decode('utf-8')}分！"
-        )
-    else:
-        update.message.reply_text(
-            f"多謝{admin_title}嘅大恩大德🙇‍♂️🙇‍♀️！繼續努力🤗！加你 {user_name_str} {points}分！\n {user_name_str} 而家嘅CLS分數係 {r.get(user_name).decode('utf-8')}分！"
-        )
+#     if points < 0:
+#         update.message.reply_text(
+#             f"嗱！依家{admin_title}大發慈悲，扣住你 {user_name_str} {-points}分先，下次唔好喇～\n {user_name_str} 而家嘅CLS分數係 {r.get(user_name).decode('utf-8')}分！"
+#         )
+#     else:
+#         update.message.reply_text(
+#             f"多謝{admin_title}嘅大恩大德🙇‍♂️🙇‍♀️！繼續努力🤗！加你 {user_name_str} {points}分！\n {user_name_str} 而家嘅CLS分數係 {r.get(user_name).decode('utf-8')}分！"
+#         )
 
 
 """
@@ -143,21 +142,21 @@ Get a user's points
 """
 
 
-def showPoints(update, context):
-    if not context.args:
-        update.message.reply_text("唔該輸入正確嘅指令：/show @username")
-        return
-    user_name_str = [str(i) for i in context.args]
-    user_name = "cls:" + str(" ".join(user_name_str))
+# def showPoints(update, context):
+#     if not context.args:
+#         update.message.reply_text("唔該輸入正確嘅指令：/show @username")
+#         return
+#     user_name_str = [str(i) for i in context.args]
+#     user_name = "cls:" + str(" ".join(user_name_str))
 
-    # points = context.user_data.get(user_name, 0)
-    if r.exists(user_name):
-        points = r.get(user_name).decode("utf-8")
-    else:
-        update.message.reply_text("冇呢個人喎...一係你打錯名，一係呢個人未有分🤔")
-        return
+#     # points = context.user_data.get(user_name, 0)
+#     if r.exists(user_name):
+#         points = r.get(user_name).decode("utf-8")
+#     else:
+#         update.message.reply_text("冇呢個人喎...一係你打錯名，一係呢個人未有分🤔")
+#         return
 
-    update.message.reply_text(f"\"{' '.join(user_name_str)}\" 嘅CLS分數係：{points}")
+#     update.message.reply_text(f"\"{' '.join(user_name_str)}\" 嘅CLS分數係：{points}")
 
 
 """
@@ -165,17 +164,17 @@ Reset a user's points to 0
 """
 
 
-def resetPoints(update, context):
-    if not checkPermission(update, context):
-        return
-    if not context.args:
-        update.message.reply_text("唔該輸入正確嘅指令：/reset @username")
-        return
+# def resetPoints(update, context):
+#     if not checkPermission(update, context):
+#         return
+#     if not context.args:
+#         update.message.reply_text("唔該輸入正確嘅指令：/reset @username")
+#         return
 
-    user_name_str = [str(i) for i in context.args]
-    user_name = "cls:" + str(" ".join(user_name_str))
-    r.set(user_name, 0)
-    update.message.reply_text(f"\"{' '.join(user_name_str)}\" 嘅分數已經歸零喇！多謝院長😊🙏！")
+#     user_name_str = [str(i) for i in context.args]
+#     user_name = "cls:" + str(" ".join(user_name_str))
+#     r.set(user_name, 0)
+#     update.message.reply_text(f"\"{' '.join(user_name_str)}\" 嘅分數已經歸零喇！多謝院長😊🙏！")
 
 
 """
@@ -183,46 +182,46 @@ Points by rank
 """
 
 
-def rank(update, context):
-    ranks = {}
-    for key in r.scan_iter("cls:*"):
-        ranks[key] = r.get(key).decode("utf-8")
+# def rank(update, context):
+#     ranks = {}
+#     for key in r.scan_iter("cls:*"):
+#         ranks[key] = r.get(key).decode("utf-8")
 
-    # title
-    title = []
-    title.append("***CLS分數龍虎榜***\n\n")
+#     # title
+#     title = []
+#     title.append("***CLS分數龍虎榜***\n\n")
 
-    # positive
-    ranks = dict(sorted(ranks.items(), key=lambda item: -int(item[1])))
-    positive = []
-    positive.append("TOP 10：\n")
-    for idx, (user_name, points) in enumerate(ranks.items()):
-        if idx >= 10 or int(points) <= 0:
-            break
-        user_name = user_name[4:].decode("utf-8")
-        while user_name[0] == "@":
-            user_name = user_name[1:]
-        positive.append(f"{idx+1}: {user_name} | {points}\n")
-    if len(positive) == 1:
-        positive.append("冇人上榜~\n")
+#     # positive
+#     ranks = dict(sorted(ranks.items(), key=lambda item: -int(item[1])))
+#     positive = []
+#     positive.append("TOP 10：\n")
+#     for idx, (user_name, points) in enumerate(ranks.items()):
+#         if idx >= 10 or int(points) <= 0:
+#             break
+#         user_name = user_name[4:].decode("utf-8")
+#         while user_name[0] == "@":
+#             user_name = user_name[1:]
+#         positive.append(f"{idx+1}: {user_name} | {points}\n")
+#     if len(positive) == 1:
+#         positive.append("冇人上榜~\n")
 
-    # negative
-    ranks = dict(sorted(ranks.items(), key=lambda item: int(item[1])))
-    negative = []
-    negative.append("\n負TOP 10：\n")
-    for idx, (user_name, points) in enumerate(ranks.items()):
-        if idx >= 10 or int(points) >= 0:
-            break
-        user_name = user_name[4:].decode("utf-8")
-        while user_name[0] == "@":
-            user_name = user_name[1:]
-        negative.append(f"{idx+1}: {user_name} | {points}\n")
-    if len(negative) == 1:
-        negative.append("冇人上榜~\n")
+#     # negative
+#     ranks = dict(sorted(ranks.items(), key=lambda item: int(item[1])))
+#     negative = []
+#     negative.append("\n負TOP 10：\n")
+#     for idx, (user_name, points) in enumerate(ranks.items()):
+#         if idx >= 10 or int(points) >= 0:
+#             break
+#         user_name = user_name[4:].decode("utf-8")
+#         while user_name[0] == "@":
+#             user_name = user_name[1:]
+#         negative.append(f"{idx+1}: {user_name} | {points}\n")
+#     if len(negative) == 1:
+#         negative.append("冇人上榜~\n")
 
-    result = title + positive + negative
+#     result = title + positive + negative
 
-    update.message.reply_text("".join(result))
+#     update.message.reply_text("".join(result))
 
 
 """
@@ -230,31 +229,31 @@ Points by rank (viewall)
 """
 
 
-def rankall(update, context):
-    ranks = {}
-    for key in r.scan_iter("cls:*"):
-        ranks[key] = r.get(key).decode("utf-8")
+# def rankall(update, context):
+#     ranks = {}
+#     for key in r.scan_iter("cls:*"):
+#         ranks[key] = r.get(key).decode("utf-8")
 
-    # title
-    title = []
-    title.append("***CLS分數龍虎榜***\n\n")
+#     # title
+#     title = []
+#     title.append("***CLS分數龍虎榜***\n\n")
 
-    # all points
-    ranks = dict(sorted(ranks.items(), key=lambda item: -int(item[1])))
-    rank = []
-    for idx, (user_name, points) in enumerate(ranks.items()):
-        if int(points) == 0:
-            continue
-        user_name = user_name[4:].decode("utf-8")
-        while user_name[0] == "@":
-            user_name = user_name[1:]
-        rank.append(f"{len(rank)+1}: {user_name} | {points}\n")
-    if len(rank) == 0:
-        rank.append("冇人上榜~\n")
+#     # all points
+#     ranks = dict(sorted(ranks.items(), key=lambda item: -int(item[1])))
+#     rank = []
+#     for idx, (user_name, points) in enumerate(ranks.items()):
+#         if int(points) == 0:
+#             continue
+#         user_name = user_name[4:].decode("utf-8")
+#         while user_name[0] == "@":
+#             user_name = user_name[1:]
+#         rank.append(f"{len(rank)+1}: {user_name} | {points}\n")
+#     if len(rank) == 0:
+#         rank.append("冇人上榜~\n")
 
-    result = title + rank
+#     result = title + rank
 
-    update.message.reply_text("".join(result))
+#     update.message.reply_text("".join(result))
 
 
 """
@@ -262,22 +261,22 @@ Delete key from redis
 """
 
 
-def delete(update, context):
-    if not checkPermission(update, context):
-        return
-    if not context.args:
-        update.message.reply_text("唔該輸入正確嘅指令：/delete @username")
-        return
+# def delete(update, context):
+#     if not checkPermission(update, context):
+#         return
+#     if not context.args:
+#         update.message.reply_text("唔該輸入正確嘅指令：/delete @username")
+#         return
 
-    user_name_str = [str(i) for i in context.args]
-    user_name = "cls:" + str(" ".join(user_name_str))
+#     user_name_str = [str(i) for i in context.args]
+#     user_name = "cls:" + str(" ".join(user_name_str))
 
-    if not r.exists(user_name):
-        update.message.reply_text("未adjust呢個人嘅分數！麻煩adjust咗先再delete！")
-        return
+#     if not r.exists(user_name):
+#         update.message.reply_text("未adjust呢個人嘅分數！麻煩adjust咗先再delete！")
+#         return
 
-    r.delete(user_name)
-    update.message.reply_text(f"剷咗\"{' '.join(user_name_str)}\"")
+#     r.delete(user_name)
+#     update.message.reply_text(f"剷咗\"{' '.join(user_name_str)}\"")
 
 
 """
@@ -285,16 +284,16 @@ Check existing users in redis
 """
 
 
-def users(update, context):
-    if not checkPermission(update, context):
-        return
+# def users(update, context):
+#     if not checkPermission(update, context):
+#         return
 
-    result = []
-    for key in r.scan_iter("cls:*"):
-        key = key[4:]
-        result.append(f"{key.decode('utf-8')}\n")
+#     result = []
+#     for key in r.scan_iter("cls:*"):
+#         key = key[4:]
+#         result.append(f"{key.decode('utf-8')}\n")
 
-    update.message.reply_text("".join(result))
+#     update.message.reply_text("".join(result))
 
 
 """Currency from CAD to HKD"""
@@ -371,13 +370,13 @@ def main():
     # on different commands - answer in Telegram
     dp.add_handler(CommandHandler("start", start))
     dp.add_handler(CommandHandler("help", help))
-    dp.add_handler(CommandHandler("adjust", adjustPoints))
-    dp.add_handler(CommandHandler("show", showPoints))
-    dp.add_handler(CommandHandler("reset", resetPoints))
-    dp.add_handler(CommandHandler("rank", rank))
-    dp.add_handler(CommandHandler("rankall", rankall))
-    dp.add_handler(CommandHandler("delete", delete))
-    dp.add_handler(CommandHandler("users", users))
+    # dp.add_handler(CommandHandler("adjust", adjustPoints))
+    # dp.add_handler(CommandHandler("show", showPoints))
+    # dp.add_handler(CommandHandler("reset", resetPoints))
+    # dp.add_handler(CommandHandler("rank", rank))
+    # dp.add_handler(CommandHandler("rankall", rankall))
+    # dp.add_handler(CommandHandler("delete", delete))
+    # dp.add_handler(CommandHandler("users", users))
     dp.add_handler(CommandHandler("currency", currency))
     dp.add_handler(CommandHandler("mewe", mewe))
     dp.add_handler(CommandHandler("ig", ig))
